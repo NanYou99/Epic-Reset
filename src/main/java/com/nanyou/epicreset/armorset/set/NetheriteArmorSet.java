@@ -2,10 +2,6 @@ package com.nanyou.epicreset.armorset.set;
 
 import com.nanyou.epicreset.armorset.ArmorSet;
 import com.nanyou.epicreset.armorset.stat.StatCategory;
-import net.minecraft.core.Holder;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Items;
 
@@ -30,8 +26,9 @@ public final class NetheriteArmorSet {
                                 StatCategory.MELEE_DMG, 0.18,
                                 StatCategory.DAMAGE_REDUCE, 0.16
                         ))
+                // ⭐ 4件套：删掉了抗火 buff，只保留数值加成
                 .fourPiece("armorset.netherite.four", (player, count) -> {
-                    ensureEffect(player, MobEffects.FIRE_RESISTANCE, 260, 0);
+                    // 空 lambda，不再添加抗火效果
                 }, of(
                         StatCategory.MELEE_DMG, 0.25,
                         StatCategory.DAMAGE_REDUCE, 0.24,
@@ -42,15 +39,5 @@ public final class NetheriteArmorSet {
                         StatCategory.KNOCKBACK_RESIST, 0.35
                 ))
                 .build();
-    }
-
-    private static void ensureEffect(net.minecraft.server.level.ServerPlayer player,
-                                     Holder<MobEffect> effect,
-                                     int duration, int amplifier) {
-        MobEffectInstance current = player.getEffect(effect);
-        if (current == null || current.getDuration() < 40 || current.getAmplifier() < amplifier) {
-            player.addEffect(new MobEffectInstance(effect, duration, amplifier,
-                    false, false, true));
-        }
     }
 }

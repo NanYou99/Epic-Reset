@@ -59,11 +59,7 @@ public final class AffixManager {
         return isArmorEquipment(item, stack) || isSupportedWeapon(item, stack);
     }
 
-    /**
-     * ⭐ 支持所有近战/远程武器（含 1.21 新锤子）
-     */
     public static boolean isSupportedWeapon(Item item, ItemStack stack) {
-        // 原版剑/斧/镐/铲/锄
         if (AffixItemFilter.isWeaponWhitelisted(item)
                 || stack.is(ItemTags.SWORDS)
                 || stack.is(ItemTags.AXES)
@@ -72,7 +68,6 @@ public final class AffixManager {
                 || stack.is(ItemTags.HOES)) {
             return true;
         }
-        // ⭐ 弓、弩、三叉戟、锤（1.21 新增）
         if (item instanceof BowItem
                 || item instanceof CrossbowItem
                 || item instanceof TridentItem
@@ -82,9 +77,6 @@ public final class AffixManager {
         return false;
     }
 
-    /**
-     * ⭐ 判定武器风格
-     */
     private static WeaponStyle detectWeaponStyle(ItemStack stack) {
         if (stack.isEmpty()) return WeaponStyle.MELEE;
         Item item = stack.getItem();
@@ -94,7 +86,6 @@ public final class AffixManager {
             if (item instanceof SwordItem || item instanceof AxeItem
                     || item instanceof PickaxeItem || item instanceof ShovelItem
                     || item instanceof HoeItem) return WeaponStyle.MELEE;
-            // ⭐ 锤子算近战
             if (item instanceof MaceItem) return WeaponStyle.MELEE;
             if (item instanceof TridentItem) return WeaponStyle.BOTH;
         } catch (Throwable ignored) {}
@@ -262,56 +253,53 @@ public final class AffixManager {
     private static Map<String, AffixDefinition> createArmorPool() {
         Map<String, AffixDefinition> pool = new LinkedHashMap<>();
         add(pool, new AffixDefinition("armor_guard", "affix.epic-reset.armor_guard",
-                0.01, 0.03, Map.of(StatCategory.DAMAGE_REDUCE, 1d)));
+                0.02, 0.06, Map.of(StatCategory.DAMAGE_REDUCE, 1d)));
         add(pool, new AffixDefinition("armor_precision", "affix.epic-reset.armor_precision",
-                0.005, 0.02, Map.of(StatCategory.CRIT_RATE, 1d)));
+                0.03, 0.08, Map.of(StatCategory.CRIT_RATE, 1d)));
         add(pool, new AffixDefinition("armor_fury", "affix.epic-reset.armor_fury",
-                0.03, 0.08, Map.of(StatCategory.CRIT_DMG, 1d)));
+                0.08, 0.20, Map.of(StatCategory.CRIT_DMG, 1d)));
         add(pool, new AffixDefinition("armor_vampiric", "affix.epic-reset.armor_vampiric",
-                0.005, 0.015, Map.of(StatCategory.LIFE_STEAL, 1d)));
+                0.02, 0.06, Map.of(StatCategory.LIFE_STEAL, 1d)));
         add(pool, new AffixDefinition("armor_piercing", "affix.epic-reset.armor_piercing",
-                0.01, 0.04, Map.of(StatCategory.ARMOR_PIERCE, 1d)));
+                0.05, 0.12, Map.of(StatCategory.ARMOR_PIERCE, 1d)));
         add(pool, new AffixDefinition("armor_evasion", "affix.epic-reset.armor_evasion",
-                0.005, 0.02, Map.of(StatCategory.EVASION, 1d)));
+                0.02, 0.06, Map.of(StatCategory.EVASION, 1d)));
         add(pool, new AffixDefinition("armor_swiftness", "affix.epic-reset.armor_swiftness",
-                0.01, 0.03, Map.of(StatCategory.MOVE_SPEED, 1d)));
+                0.10, 0.25, Map.of(StatCategory.MOVE_SPEED, 1d)));
         add(pool, new AffixDefinition("armor_fortitude", "affix.epic-reset.armor_fortitude",
-                0.02, 0.05, Map.of(StatCategory.KNOCKBACK_RESIST, 1d)));
+                0.05, 0.15, Map.of(StatCategory.KNOCKBACK_RESIST, 1d)));
         add(pool, new AffixDefinition("armor_recovery", "affix.epic-reset.armor_recovery",
-                0.02, 0.05, Map.of(StatCategory.HEAL_POWER, 1d)));
+                0.05, 0.15, Map.of(StatCategory.HEAL_POWER, 1d)));
         add(pool, new AffixDefinition("armor_haste", "affix.epic-reset.armor_haste",
-                0.01, 0.03, Map.of(StatCategory.ATTACK_SPEED, 1d)));
+                0.10, 0.25, Map.of(StatCategory.ATTACK_SPEED, 1d)));
         return Map.copyOf(pool);
     }
 
     private static Map<String, AffixDefinition> createWeaponPool() {
         Map<String, AffixDefinition> pool = new LinkedHashMap<>();
         add(pool, new AffixDefinition("weapon_power", "affix.epic-reset.weapon_power",
-                0.02, 0.06, Map.of(
+                0.05, 0.15, Map.of(
                 StatCategory.MELEE_DMG, 1d,
                 StatCategory.RANGED_DMG, 1d,
                 StatCategory.THROW_DMG, 1d)));
         add(pool, new AffixDefinition("weapon_precision", "affix.epic-reset.weapon_precision",
-                0.01, 0.04, Map.of(StatCategory.CRIT_RATE, 1d)));
+                0.03, 0.10, Map.of(StatCategory.CRIT_RATE, 1d)));
         add(pool, new AffixDefinition("weapon_fury", "affix.epic-reset.weapon_fury",
-                0.04, 0.12, Map.of(StatCategory.CRIT_DMG, 1d)));
+                0.10, 0.30, Map.of(StatCategory.CRIT_DMG, 1d)));
         add(pool, new AffixDefinition("weapon_piercing", "affix.epic-reset.weapon_piercing",
-                0.01, 0.05, Map.of(StatCategory.ARMOR_PIERCE, 1d)));
+                0.05, 0.15, Map.of(StatCategory.ARMOR_PIERCE, 1d)));
         add(pool, new AffixDefinition("weapon_vampiric", "affix.epic-reset.weapon_vampiric",
-                0.005, 0.02, Map.of(StatCategory.LIFE_STEAL, 1d)));
+                0.02, 0.06, Map.of(StatCategory.LIFE_STEAL, 1d)));
         add(pool, new AffixDefinition("weapon_swiftness", "affix.epic-reset.weapon_swiftness",
-                0.01, 0.04, Map.of(StatCategory.ATTACK_SPEED, 1d)));
+                0.10, 0.25, Map.of(StatCategory.ATTACK_SPEED, 1d)));
         add(pool, new AffixDefinition("weapon_burning", "affix.epic-reset.weapon_burning",
-                0.01, 0.03, Map.of(StatCategory.BURN_DMG, 1d)));
+                0.03, 0.08, Map.of(StatCategory.BURN_DMG, 1d)));
         add(pool, new AffixDefinition("weapon_bleeding", "affix.epic-reset.weapon_bleeding",
-                0.01, 0.03, Map.of(StatCategory.DOT_BLEED, 1d)));
-
+                0.03, 0.08, Map.of(StatCategory.DOT_BLEED, 1d)));
         add(pool, new AffixDefinition("weapon_butcher", "affix.epic-reset.weapon_butcher",
-                0.03, 0.07, Map.of(StatCategory.MELEE_DMG, 1d)));
-
+                0.08, 0.20, Map.of(StatCategory.MELEE_DMG, 1d)));
         add(pool, new AffixDefinition("weapon_marksman", "affix.epic-reset.weapon_marksman",
-                0.03, 0.07, Map.of(StatCategory.RANGED_DMG, 1d)));
-
+                0.08, 0.20, Map.of(StatCategory.RANGED_DMG, 1d)));
         return Map.copyOf(pool);
     }
 

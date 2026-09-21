@@ -168,18 +168,13 @@ public final class CombatEvents {
             }
         }
 
-        // ⭐ 焚焰：额外伤害始终生效，视觉着火受 fireImmune 限制
+        // ⭐ 焚焰：只增加额外伤害，不再点燃目标
+        // （无论 BURN_DMG 从共鸣、互动还是随机词条来，都不会有火焰视觉）
         if (factors.containsKey(StatCategory.BURN_DMG)) {
             double burnFactor = factors.get(StatCategory.BURN_DMG);
             if (burnFactor > 1.001) {
                 double burnPct = (burnFactor - 1.0) * 100;
-                float burnDamage = (float) burnPct;
-                dmg += burnDamage; // ⭐ 额外伤害对所有生物生效
-
-                // ⭐ 视觉着火只对非火焰免疫生物生效
-                if (!target.fireImmune()) {
-                    target.igniteForSeconds(3.0f);
-                }
+                dmg += (float) burnPct;
             }
         }
 

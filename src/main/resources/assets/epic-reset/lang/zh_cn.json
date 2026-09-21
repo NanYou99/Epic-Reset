@@ -100,6 +100,7 @@
   "stat.epic-reset.max_health": "生命值",
   "stat.epic-reset.heal_power": "治疗强度",
   "stat.epic-reset.evasion": "闪避率",
+  "stat.epic-reset.armor": "护甲值",
 
   "armorset.third_party.name.netherite_gold": "金下界合金套装",
   "armorset.third_party.name.fiery": "炽铁套装",

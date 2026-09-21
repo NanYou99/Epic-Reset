@@ -35,19 +35,16 @@ public final class IdentificationScrollItem extends Item {
             return InteractionResultHolder.success(scroll);
         }
 
-        // ⭐ 只检查副手
         InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND)
                 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
         ItemStack target = player.getItemInHand(otherHand);
 
-        // 副手必须是非空物品
         if (target.isEmpty()) {
             player.displayClientMessage(
                     Component.literal("请将未鉴定的装备放在副手").withStyle(ChatFormatting.RED), true);
             return InteractionResultHolder.fail(scroll);
         }
 
-        // 不能鉴定鉴定卷轴本身
         if (target.getItem() instanceof IdentificationScrollItem) {
             player.displayClientMessage(
                     Component.literal("无法鉴定鉴定卷轴").withStyle(ChatFormatting.RED), true);
@@ -56,13 +53,13 @@ public final class IdentificationScrollItem extends Item {
 
         boolean identifiedAny = false;
 
-        // ⭐ 1. 鉴定随机词条（护甲 + 武器 通吃）
+        // 1. 鉴定随机词条
         if (AffixManager.hasAffixData(target) && !AffixManager.isIdentified(target)) {
             AffixManager.identify(target);
             identifiedAny = true;
         }
 
-        // ⭐ 2. 如果是护甲，还要检查套装鉴定
+        // 2. 如果是护甲，检查套装鉴定
         if (target.getItem() instanceof ArmorItem) {
             if (isPiecePendingSetIdentification(player, target)) {
                 ThirdPartyArmorSetResolver.markPieceIdentified(target);
@@ -70,7 +67,6 @@ public final class IdentificationScrollItem extends Item {
             }
         }
 
-        // 全都鉴定过了
         if (!identifiedAny) {
             player.displayClientMessage(
                     Component.literal("该装备已完全鉴定").withStyle(ChatFormatting.GRAY), true);
@@ -89,17 +85,21 @@ public final class IdentificationScrollItem extends Item {
     }
 
     /**
-     * ⭐ 判断该件护甲是否需要套装鉴定
-     * 条件：属于史诗/神话套装，且还没打上鉴定标记
+     * ⭐ 修复：正确处理第三方套装（IArmorSetProvider 返回 null 时回退）
      */
     private static boolean isPiecePendingSetIdentification(Player player, ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ArmorItem)) return false;
         if (ThirdPartyArmorSetResolver.isPieceIdentified(stack)) return false;
 
         String groupKey = null;
+
+        // 优先尝试原版接口
         if (stack.getItem() instanceof IArmorSetProvider provider) {
             groupKey = provider.epicreset$getArmorSetId();
-        } else {
+        }
+
+        // ⭐ 如果为 null（第三方套装），回退到第三方解析
+        if (groupKey == null) {
             Optional<ThirdPartyArmorSetResolver.SetInfo> infoOpt =
                     ThirdPartyArmorSetResolver.getSetInfo(stack, player);
             if (infoOpt.isPresent()) {
@@ -116,9 +116,6 @@ public final class IdentificationScrollItem extends Item {
         return ThirdPartyArmorSetResolver.requiresIdentification(tierInfo.tier());
     }
 
-    /**
-     * 播放鉴定特效（音效 + 粒子）
-     */
     private static void playIdentifyEffect(Level level, Player player) {
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.playSound(null,

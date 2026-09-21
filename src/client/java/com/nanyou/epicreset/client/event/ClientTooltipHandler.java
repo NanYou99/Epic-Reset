@@ -50,15 +50,14 @@ public final class ClientTooltipHandler {
             lines.add(Component.translatable("affix.epic-reset.unidentified").withStyle(ChatFormatting.DARK_PURPLE));
         }
 
-        // ⭐ 根据词条数量决定颜色
         ChatFormatting color;
         if (!AffixManager.isIdentified(stack)) {
             color = ChatFormatting.DARK_GRAY;
         } else {
             color = switch (affixes.size()) {
-                case 3 -> ChatFormatting.GOLD;    // 极品
-                case 2 -> ChatFormatting.BLUE;    // 稀有
-                default -> ChatFormatting.WHITE;   // 普通
+                case 3 -> ChatFormatting.GOLD;
+                case 2 -> ChatFormatting.BLUE;
+                default -> ChatFormatting.WHITE;
             };
         }
 
@@ -195,10 +194,16 @@ public final class ClientTooltipHandler {
         lines.add(Component.literal("  ").append(mark).append(desc));
     }
 
+    /**
+     * ⭐ 生命值、护甲值：整数显示
+     * 攻击范围：格显示
+     * 击退力量：小数显示
+     * 其他：百分比显示
+     */
     private static MutableComponent formatStat(StatCategory cat, double value, TextColor color) {
         String statName = I18n.get("stat.epic-reset." + cat.name().toLowerCase(Locale.ROOT));
         String valStr;
-        if (cat == StatCategory.MAX_HEALTH) {
+        if (cat == StatCategory.MAX_HEALTH || cat == StatCategory.ARMOR) {
             valStr = "+" + (int)value;
         } else if (cat == StatCategory.ATTACK_RANGE) {
             valStr = "+" + String.format(Locale.ROOT, "%.2f", value) + " 格";

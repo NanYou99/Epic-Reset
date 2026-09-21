@@ -49,10 +49,12 @@ public final class ResonanceRegistry {
         mgr.register(ResonanceEntry.of(MaterialKey.DIAMOND, WeaponType.AXE,
                 m(MELEE_DMG, 0.10)));
 
+        // ⭐ 下界合金：移除 BURN_DMG（原来是 m(MELEE_DMG, 0.08, BURN_DMG, 0.02)）
         mgr.register(ResonanceEntry.of(MaterialKey.NETHERITE, WeaponType.SWORD,
-                m(MELEE_DMG, 0.08, BURN_DMG, 0.02)));
+                m(MELEE_DMG, 0.08)));
+        // ⭐ 下界合金斧：移除 BURN_DMG（原来是 m(BURN_DMG, 0.03, DAMAGE_REDUCE, -0.08)）
         mgr.register(ResonanceEntry.of(MaterialKey.NETHERITE, WeaponType.AXE,
-                m(BURN_DMG, 0.03, DAMAGE_REDUCE, -0.08)));
+                m(DAMAGE_REDUCE, -0.08)));
     }
 
     public static Map<StatCategory, Double> intrinsicSword(Item item) {

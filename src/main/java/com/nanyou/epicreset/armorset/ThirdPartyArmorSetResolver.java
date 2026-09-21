@@ -22,6 +22,7 @@ public final class ThirdPartyArmorSetResolver {
     public static final String IDENTIFY_NBT_KEY = "epicreset_set_identified";
     private static final Map<String, TierInfo> TIER_CACHE = new ConcurrentHashMap<>();
 
+    // ⭐ 8 个核心词条（新增 ARMOR）
     private static final List<StatCategory> CORE_POOL = List.of(
             StatCategory.MELEE_DMG,
             StatCategory.RANGED_DMG,
@@ -29,43 +30,36 @@ public final class ThirdPartyArmorSetResolver {
             StatCategory.MAX_HEALTH,
             StatCategory.CRIT_DMG,
             StatCategory.ATTACK_SPEED,
-            StatCategory.LIFE_STEAL
+            StatCategory.LIFE_STEAL,
+            StatCategory.ARMOR
     );
 
-    // ⭐ 12 种风格权重表（7 个元素）
-    private static final double[] STYLE_WARRIOR   = {3.0, 0.3, 1.8, 1.5, 2.5, 1.2, 1.0};
-    private static final double[] STYLE_KNIGHT    = {2.5, 0.3, 1.2, 3.0, 1.8, 1.0, 1.5};
-    private static final double[] STYLE_MAGE      = {0.3, 3.0, 1.5, 1.0, 2.5, 1.5, 1.0};
-    private static final double[] STYLE_PRIEST    = {0.3, 2.5, 1.0, 2.5, 1.2, 1.5, 2.5};
-    private static final double[] STYLE_WARLOCK   = {0.3, 2.8, 1.5, 1.0, 2.0, 1.2, 1.0};
-    private static final double[] STYLE_ARCHER    = {0.3, 3.0, 2.0, 1.0, 1.5, 2.5, 1.0};
-    private static final double[] STYLE_RANGER    = {0.5, 2.8, 1.5, 1.2, 1.5, 1.8, 2.5};
-    private static final double[] STYLE_ASSASSIN  = {1.5, 1.0, 3.0, 1.0, 3.0, 1.8, 2.8};
-    private static final double[] STYLE_TANK      = {1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 1.5};
-    private static final double[] STYLE_GUARDIAN  = {1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 2.5};
-    private static final double[] STYLE_BALANCED  = {1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5};
+    // ⭐ 12 种风格权重表（8 元素，最后一位是 ARMOR 护甲值权重）
+    private static final double[] STYLE_WARRIOR   = {3.0, 0.3, 1.8, 1.5, 2.5, 1.2, 1.0, 1.8};
+    private static final double[] STYLE_KNIGHT    = {2.5, 0.3, 1.2, 3.0, 1.8, 1.0, 1.5, 2.8};
+    private static final double[] STYLE_MAGE      = {0.3, 3.0, 1.5, 1.0, 2.5, 1.5, 1.0, 0.5};
+    private static final double[] STYLE_PRIEST    = {0.3, 2.5, 1.0, 2.5, 1.2, 1.5, 2.5, 1.2};
+    private static final double[] STYLE_WARLOCK   = {0.3, 2.8, 1.5, 1.0, 2.0, 1.2, 1.0, 0.5};
+    private static final double[] STYLE_ARCHER    = {0.3, 3.0, 2.0, 1.0, 1.5, 2.5, 1.0, 0.5};
+    private static final double[] STYLE_RANGER    = {0.5, 2.8, 1.5, 1.2, 1.5, 1.8, 2.5, 0.7};
+    private static final double[] STYLE_ASSASSIN  = {1.5, 1.0, 3.0, 1.0, 3.0, 1.8, 2.8, 0.5};
+    private static final double[] STYLE_TANK      = {1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 1.5, 3.0};
+    private static final double[] STYLE_GUARDIAN  = {1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 2.5, 2.8};
+    private static final double[] STYLE_BALANCED  = {1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5};
 
     private static final String[] WARRIOR_KW  = {"warrior", "berserker", "fighter", "champion",
             "destroyer", "onslaught", "slayer", "dark_lord", "golden_horns", "战斗", "战士", "角盔"};
-    private static final String[] KNIGHT_KW   = {"knight", "justicar", "soldier", "paladin_warrior",
-            "骑士", "审判官"};
+    private static final String[] KNIGHT_KW   = {"knight", "justicar", "soldier", "paladin_warrior", "骑士", "审判官"};
     private static final String[] MAGE_KW     = {"wizard", "mage", "sorcerer", "arcane", "magic", "spell",
-            "frozen", "frost", "fire_robe", "tempest", "storm",
-            "法师", "巫师", "奥秘", "魔法"};
-    private static final String[] PRIEST_KW   = {"priest", "prior", "holy", "absolution",
-            "牧师", "修院长", "神圣", "赦罪"};
-    private static final String[] WARLOCK_KW  = {"warlock", "witch", "dark_magic", "void_robe",
-            "术士", "女巫"};
-    private static final String[] ARCHER_KW   = {"archer", "bow", "crossbow", "sharpshooter",
-            "弓箭", "射手"};
-    private static final String[] RANGER_KW   = {"ranger", "hunter", "stalker", "bounty", "polar",
-            "游侠", "猎人", "裂隙猎手"};
+            "frozen", "frost", "fire_robe", "tempest", "storm", "法师", "巫师", "奥秘", "魔法"};
+    private static final String[] PRIEST_KW   = {"priest", "prior", "holy", "absolution", "牧师", "修院长", "神圣", "赦罪"};
+    private static final String[] WARLOCK_KW  = {"warlock", "witch", "dark_magic", "void_robe", "术士", "女巫"};
+    private static final String[] ARCHER_KW   = {"archer", "bow", "crossbow", "sharpshooter", "弓箭", "射手"};
+    private static final String[] RANGER_KW   = {"ranger", "hunter", "stalker", "bounty", "polar", "游侠", "猎人", "裂隙猎手"};
     private static final String[] ASSASSIN_KW = {"assassin", "rogue", "shadow", "abyssal", "deathmantle",
             "riftstalker", "刺客", "死神", "暗影"};
-    private static final String[] TANK_KW     = {"guardian", "fortress", "divine", "lightbringer",
-            "守护", "圣骑", "神性"};
-    private static final String[] GUARDIAN_KW = {"guard", "avatar", "holy_guard",
-            "守卫", "神性长袍"};
+    private static final String[] TANK_KW     = {"guardian", "fortress", "divine", "lightbringer", "守护", "圣骑", "神性"};
+    private static final String[] GUARDIAN_KW = {"guard", "avatar", "holy_guard", "守卫", "神性长袍"};
 
     private ThirdPartyArmorSetResolver() {}
 
@@ -77,24 +71,13 @@ public final class ThirdPartyArmorSetResolver {
         if (stack == null || stack.isEmpty()) return false;
         var data = stack.get(DataComponents.CUSTOM_DATA);
         if (data == null) return false;
-        try {
-            return data.copyTag().getBoolean(IDENTIFY_NBT_KEY);
-        } catch (Exception e) {
-            return false;
-        }
+        try { return data.copyTag().getBoolean(IDENTIFY_NBT_KEY); } catch (Exception e) { return false; }
     }
 
     public static void markPieceIdentified(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return;
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
                 nbt -> nbt.putBoolean(IDENTIFY_NBT_KEY, true));
-    }
-
-    public static boolean isSetFullyIdentified(List<ItemStack> equippedPieces) {
-        for (ItemStack piece : equippedPieces) {
-            if (!isPieceIdentified(piece)) return false;
-        }
-        return true;
     }
 
     public static Optional<SetInfo> getSetInfo(ItemStack stack, Player player) {
@@ -139,9 +122,7 @@ public final class ThirdPartyArmorSetResolver {
             || path.endsWith("_head") || path.endsWith("_chest") || path.endsWith("_legs") || path.endsWith("_feet");
     }
 
-    private static boolean isArmorItem(Item item) {
-        return item instanceof ArmorItem;
-    }
+    private static boolean isArmorItem(Item item) { return item instanceof ArmorItem; }
 
     private static boolean hasNetheriteTraits(ItemStack stack) {
         if (!(stack.getItem() instanceof ArmorItem armorItem)) return false;
@@ -149,9 +130,7 @@ public final class ThirdPartyArmorSetResolver {
             var holder = armorItem.getMaterial();
             if (holder != null) {
                 var material = holder.value();
-                if (material != null && material.toughness() >= 3.0f && material.knockbackResistance() > 0.0f) {
-                    return true;
-                }
+                if (material != null && material.toughness() >= 3.0f && material.knockbackResistance() > 0.0f) return true;
             }
         } catch (Throwable ignored) {}
         return false;
@@ -159,23 +138,16 @@ public final class ThirdPartyArmorSetResolver {
 
     private static ThirdPartyArmorTier determineTier(String fullGroupKey, Map<EquipmentSlot, Item> pieces, double armorTotal) {
         String lower = fullGroupKey.toLowerCase();
-
         if (lower.contains("nether") || lower.contains("dragon") || lower.contains("mythic")
-            || lower.contains("divine") || lower.contains("fiery")) {
-            return ThirdPartyArmorTier.MYTHIC;
-        }
+            || lower.contains("divine") || lower.contains("fiery")) return ThirdPartyArmorTier.MYTHIC;
         for (Item item : pieces.values()) {
             if (hasNetheriteTraits(item.getDefaultInstance())) return ThirdPartyArmorTier.MYTHIC;
         }
         if (lower.contains("diamond") || lower.contains("emerald") || lower.contains("ruby")
-            || lower.contains("amethyst") || lower.contains("crystal") || lower.contains("epic")) {
-            return ThirdPartyArmorTier.EPIC;
-        }
+            || lower.contains("amethyst") || lower.contains("crystal") || lower.contains("epic")) return ThirdPartyArmorTier.EPIC;
         if (lower.contains("iron") || lower.contains("gold") || lower.contains("steel")
             || lower.contains("copper") || lower.contains("obsidian") || lower.contains("silver")
-            || lower.contains("heavy")) {
-            return ThirdPartyArmorTier.LEGENDARY;
-        }
+            || lower.contains("heavy")) return ThirdPartyArmorTier.LEGENDARY;
         if (armorTotal >= 20) return ThirdPartyArmorTier.MYTHIC;
         if (armorTotal >= 15) return ThirdPartyArmorTier.EPIC;
         if (armorTotal >= 12) return ThirdPartyArmorTier.LEGENDARY;
@@ -214,50 +186,43 @@ public final class ThirdPartyArmorSetResolver {
         });
     }
 
-    /**
-     * ⭐ 核心：AI 词条分配 + 突出属性加成
-     */
     private static TierInfo createTierInfo(ThirdPartyArmorTier tier, String groupKey, boolean isVanilla, int totalPieces, Map<EquipmentSlot, Item> slotPieces) {
-        // === 1. 品阶决定词条数量和单条上限 ===
         int twoPieceCount, fourPieceCount;
-        double percentCap;
         double healthCap;
-        double spikeMultiplier; // ⭐ 突出词条加成倍率
+        double armorCap;       // ⭐ 护甲值上限
+        double spikeMultiplier;
 
         switch (tier) {
             case RARE -> {
                 twoPieceCount = 2; fourPieceCount = 2;
-                percentCap = isVanilla ? 0.04 : 0.05;
                 healthCap = isVanilla ? 6 : 8;
+                armorCap = isVanilla ? 2 : 3;
                 spikeMultiplier = isVanilla ? 1.10 : 1.20;
             }
             case LEGENDARY -> {
                 twoPieceCount = 3; fourPieceCount = 3;
-                percentCap = isVanilla ? 0.045 : 0.055;
                 healthCap = isVanilla ? 9 : 12;
+                armorCap = isVanilla ? 3 : 4;
                 spikeMultiplier = isVanilla ? 1.12 : 1.22;
             }
             case EPIC -> {
                 twoPieceCount = 3; fourPieceCount = 4;
-                percentCap = isVanilla ? 0.05 : 0.065;
                 healthCap = isVanilla ? 12 : 16;
+                armorCap = isVanilla ? 4 : 6;
                 spikeMultiplier = isVanilla ? 1.15 : 1.28;
             }
             case MYTHIC -> {
                 twoPieceCount = 4; fourPieceCount = 3;
-                // ⭐ 原版神话 4.5% / 15 HP，第三方神话 7.5% / 20 HP
-                percentCap = isVanilla ? 0.045 : 0.075;
                 healthCap = isVanilla ? 15 : 20;
+                armorCap = isVanilla ? 5 : 8;
                 spikeMultiplier = isVanilla ? 1.15 : 1.35;
             }
             default -> {
                 twoPieceCount = 3; fourPieceCount = 3;
-                percentCap = 0.05; healthCap = 10;
-                spikeMultiplier = 1.15;
+                healthCap = 10; armorCap = 4; spikeMultiplier = 1.15;
             }
         }
 
-        // === 2. 计算权重 ===
         String lowerKey = groupKey.toLowerCase();
         double[] weights = pickStyle(lowerKey).clone();
 
@@ -266,7 +231,6 @@ public final class ThirdPartyArmorSetResolver {
             weights[i] *= (0.85 + rng.nextDouble() * 0.30);
         }
 
-        // ⭐ 找出权重最高的前 2 个词条作为"突出属性"
         record IndexedWeight(int idx, double weight) {}
         List<IndexedWeight> indexed = new ArrayList<>();
         for (int i = 0; i < weights.length; i++) {
@@ -274,14 +238,11 @@ public final class ThirdPartyArmorSetResolver {
         }
         indexed.sort((a, b) -> Double.compare(b.weight(), a.weight()));
         Set<Integer> spikeIndices = new HashSet<>();
-        spikeIndices.add(indexed.get(0).idx()); // 权重最高的
-        if (indexed.size() > 1) {
-            spikeIndices.add(indexed.get(1).idx()); // 权重第二高的
-        }
+        spikeIndices.add(indexed.get(0).idx());
+        if (indexed.size() > 1) spikeIndices.add(indexed.get(1).idx());
 
         double maxWeight = indexed.get(0).weight();
 
-        // === 3. 计算每个词条的数值 ===
         record Entry(StatCategory cat, double value, boolean isSpike) {}
         List<Entry> entries = new ArrayList<>();
         for (int i = 0; i < CORE_POOL.size(); i++) {
@@ -289,65 +250,67 @@ public final class ThirdPartyArmorSetResolver {
             double fillRatio = Math.pow(weights[i] / maxWeight, 0.7);
             fillRatio = 0.3 + fillRatio * 0.7;
 
-            // ⭐ 突出词条加成
             boolean isSpike = spikeIndices.contains(i);
-            if (isSpike) {
-                fillRatio = Math.min(1.0, fillRatio * spikeMultiplier);
-            }
+            if (isSpike) fillRatio = Math.min(1.0, fillRatio * spikeMultiplier);
 
             double value;
             if (cat == StatCategory.MAX_HEALTH) {
                 value = Math.max(1, Math.round(healthCap * fillRatio));
+            } else if (cat == StatCategory.ARMOR) {
+                // ⭐ 护甲值：固定值
+                value = Math.max(1, Math.round(armorCap * fillRatio));
+            } else if (cat == StatCategory.ATTACK_SPEED) {
+                // ⭐ 攻速：原版 15% / 第三方 30%
+                double cap = (isVanilla ? 0.15 : 0.30) * getTierMultiplier(tier);
+                value = Math.round(cap * fillRatio * 10000d) / 10000d;
             } else {
-                value = Math.round(percentCap * fillRatio * 10000d) / 10000d;
+                // 其他百分比词条：原版 4.5% / 第三方 7.5%
+                double cap = (isVanilla ? 0.045 : 0.075) * getTierMultiplier(tier);
+                value = Math.round(cap * fillRatio * 10000d) / 10000d;
             }
             entries.add(new Entry(cat, value, isSpike));
         }
 
-        // === 4. 排序：突出词条排最前，其他按值降序 ===
         entries.sort((a, b) -> {
             if (a.isSpike() != b.isSpike()) return a.isSpike() ? -1 : 1;
             return Double.compare(b.value(), a.value());
         });
 
-        // === 5. 交替分配 ===
         Map<StatCategory, Double> twoPieceMods = new EnumMap<>(StatCategory.class);
         Map<StatCategory, Double> fourPieceMods = new EnumMap<>(StatCategory.class);
 
         for (int i = 0; i < entries.size(); i++) {
             Entry e = entries.get(i);
             if (i % 2 == 0) {
-                if (twoPieceMods.size() < twoPieceCount) {
-                    twoPieceMods.put(e.cat(), e.value());
-                }
+                if (twoPieceMods.size() < twoPieceCount) twoPieceMods.put(e.cat(), e.value());
             } else {
-                if (fourPieceMods.size() < fourPieceCount) {
-                    fourPieceMods.put(e.cat(), e.value());
-                }
+                if (fourPieceMods.size() < fourPieceCount) fourPieceMods.put(e.cat(), e.value());
             }
             if (twoPieceMods.size() >= twoPieceCount && fourPieceMods.size() >= fourPieceCount) break;
         }
 
-        // 补漏
         for (Entry e : entries) {
             if (twoPieceMods.size() >= twoPieceCount && fourPieceMods.size() >= fourPieceCount) break;
             if (!twoPieceMods.containsKey(e.cat()) && !fourPieceMods.containsKey(e.cat())) {
-                if (twoPieceMods.size() < twoPieceCount) {
-                    twoPieceMods.put(e.cat(), e.value());
-                } else if (fourPieceMods.size() < fourPieceCount) {
-                    fourPieceMods.put(e.cat(), e.value());
-                }
+                if (twoPieceMods.size() < twoPieceCount) twoPieceMods.put(e.cat(), e.value());
+                else if (fourPieceMods.size() < fourPieceCount) fourPieceMods.put(e.cat(), e.value());
             }
         }
 
         return new TierInfo(tier, 0, totalPieces, twoPieceMods, fourPieceMods, slotPieces);
     }
 
-    private static double[] pickStyle(String lowerKey) {
-        String cleaned = lowerKey
-                .replace("netherite_", "")
-                .replace("nether_", "");
+    private static double getTierMultiplier(ThirdPartyArmorTier tier) {
+        return switch (tier) {
+            case RARE -> 0.5;
+            case LEGENDARY -> 0.7;
+            case EPIC -> 0.85;
+            case MYTHIC -> 1.0;
+        };
+    }
 
+    private static double[] pickStyle(String lowerKey) {
+        String cleaned = lowerKey.replace("netherite_", "").replace("nether_", "");
         int warrior = countMatches(cleaned, WARRIOR_KW);
         int knight = countMatches(cleaned, KNIGHT_KW);
         int mage = countMatches(cleaned, MAGE_KW);

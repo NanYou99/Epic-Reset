@@ -23,7 +23,7 @@ public enum StatCategory {
     MAX_HEALTH,
     HEAL_POWER,
     EVASION,
-    ALL_DMG;
+    ARMOR;  // ⭐ 新增：护甲值
 
     public static final Set<StatCategory> REDUCE_CATEGORIES = EnumSet.of(
             DAMAGE_REDUCE,

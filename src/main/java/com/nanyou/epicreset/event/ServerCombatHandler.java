@@ -19,14 +19,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class ServerCombatHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("epic-reset-combat");
     private static final Random RNG = new Random();
     private static int tickCounter = 0;
 
@@ -40,6 +37,8 @@ public class ServerCombatHandler {
             ResourceLocation.fromNamespaceAndPath("epic-reset", "set_bonus_attack_range");
     private static final ResourceLocation KNOCKBACK_RESIST_MODIFIER_ID =
             ResourceLocation.fromNamespaceAndPath("epic-reset", "set_bonus_knockback_resist");
+    private static final ResourceLocation ARMOR_MODIFIER_ID =
+            ResourceLocation.fromNamespaceAndPath("epic-reset", "set_bonus_armor");
 
     public static void register() {
         // 闪避
@@ -72,65 +71,76 @@ public class ServerCombatHandler {
 
                 applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_ID,
                         stats.getOrDefault(StatCategory.MAX_HEALTH, 0d),
-                        AttributeModifier.Operation.ADD_VALUE, true);
+                        AttributeModifier.Operation.ADD_VALUE);
 
-                applyModifier(player, Attributes.ATTACK_SPEED, ATTACK_SPEED_MODIFIER_ID,
-                        stats.getOrDefault(StatCategory.ATTACK_SPEED, 0d),
-                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE, false);
+                // ⭐ 护甲值
+                applyModifier(player, Attributes.ARMOR, ARMOR_MODIFIER_ID,
+                        stats.getOrDefault(StatCategory.ARMOR, 0d),
+                        AttributeModifier.Operation.ADD_VALUE);
 
-                applyModifier(player, Attributes.MOVEMENT_SPEED, MOVE_SPEED_MODIFIER_ID,
-                        stats.getOrDefault(StatCategory.MOVE_SPEED, 0d),
-                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE, false);
+                double atkSpeedFactor = stats.getOrDefault(StatCategory.ATTACK_SPEED, 1.0) - 1.0;
+                if (atkSpeedFactor > 0) {
+                    applyModifier(player, Attributes.ATTACK_SPEED, ATTACK_SPEED_MODIFIER_ID,
+                            atkSpeedFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+                } else {
+                    removeModifier(player, Attributes.ATTACK_SPEED, ATTACK_SPEED_MODIFIER_ID);
+                }
+
+                double moveSpeedFactor = stats.getOrDefault(StatCategory.MOVE_SPEED, 1.0) - 1.0;
+                if (moveSpeedFactor > 0) {
+                    applyModifier(player, Attributes.MOVEMENT_SPEED, MOVE_SPEED_MODIFIER_ID,
+                            moveSpeedFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+                } else {
+                    removeModifier(player, Attributes.MOVEMENT_SPEED, MOVE_SPEED_MODIFIER_ID);
+                }
 
                 applyModifier(player, Attributes.ENTITY_INTERACTION_RANGE, ATTACK_RANGE_MODIFIER_ID,
                         stats.getOrDefault(StatCategory.ATTACK_RANGE, 0d),
-                        AttributeModifier.Operation.ADD_VALUE, false);
+                        AttributeModifier.Operation.ADD_VALUE);
 
                 applyModifier(player, Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESIST_MODIFIER_ID,
                         stats.getOrDefault(StatCategory.KNOCKBACK_RESIST, 0d),
-                        AttributeModifier.Operation.ADD_VALUE, false);
+                        AttributeModifier.Operation.ADD_VALUE);
             }
         });
     }
 
-    /**
-     * ⭐ 修复：ADD_MULTIPLIED_BASE 操作需要传 rawSum（factor - 1）
-     */
     private static void applyModifier(Player player,
                                       net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
                                       ResourceLocation modifierId, double value,
-                                      AttributeModifier.Operation operation, boolean healOnGain) {
+                                      AttributeModifier.Operation operation) {
         AttributeInstance instance = player.getAttribute(attribute);
         if (instance == null) return;
         instance.removeModifier(modifierId);
 
-        // ⭐ 修复：ADD_MULTIPLIED_BASE 需要的是 rawSum，不是 factor
-        double modifierValue = value;
-        if (operation == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
-            modifierValue = value - 1.0;
-        }
-
-        if (modifierValue > 0) {
+        if (value > 0) {
             float before = player.getHealth();
             float beforeMax = player.getMaxHealth();
             try {
-                instance.addTransientModifier(new AttributeModifier(modifierId, modifierValue, operation));
+                instance.addTransientModifier(new AttributeModifier(modifierId, value, operation));
             } catch (IllegalArgumentException e) {
                 return;
             }
-            if (healOnGain && before > 0 && Math.abs(before - beforeMax) < 0.01f) {
+            if (attribute == Attributes.MAX_HEALTH && before > 0 && Math.abs(before - beforeMax) < 0.01f) {
                 player.setHealth(player.getMaxHealth());
             }
-        } else if (healOnGain && player.getHealth() > player.getMaxHealth()) {
+        } else if (attribute == Attributes.MAX_HEALTH && player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }
+    }
+
+    private static void removeModifier(Player player,
+                                       net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
+                                       ResourceLocation modifierId) {
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) return;
+        instance.removeModifier(modifierId);
     }
 
     public static Map<StatCategory, Double> collectAllStats(Player player) {
         StatAccumulator accumulator = new StatAccumulator();
         ArmorSetManager manager = ArmorSetManager.getInstance();
 
-        // ============ 1. 套装属性 ============
         Map<String, List<Boolean>> setPieces = new HashMap<>();
 
         for (EquipmentSlot slot : ArmorSetManager.getArmorSlots()) {
@@ -141,7 +151,9 @@ public class ServerCombatHandler {
 
             if (stack.getItem() instanceof IArmorSetProvider provider) {
                 groupKey = provider.epicreset$getArmorSetId();
-            } else {
+            }
+
+            if (groupKey == null) {
                 Optional<ThirdPartyArmorSetResolver.SetInfo> infoOpt =
                         ThirdPartyArmorSetResolver.getSetInfo(stack, player);
                 if (infoOpt.isPresent()) {
@@ -182,7 +194,6 @@ public class ServerCombatHandler {
             if (validCount >= 4) tierInfo.fourPieceMods().forEach(accumulator::add);
         }
 
-        // ============ 2. 随机词条 ============
         accumulator.merge(AffixManager.collectArmorMods(player));
 
         return accumulator.mulReduce();
