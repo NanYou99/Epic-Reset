@@ -3,7 +3,7 @@
   "id": "epic-reset",
   "version": "1.0.0",
   "name": "Epic Reset - 史诗重置",
-  "description": "一套高自由度的史诗级RPG套装系统！自动兼容市面上绝大多数带有护甲的模组。为原版与第三方盔甲提供动态品阶判定（稀有/传说/史诗/神话）、随机生成的2件套与4件套词条，以及极具深度的随机词条装备系统。无需配置，即可让你的整合包拥有顶级RPG体验！",
+  "description": "高自由度史诗级RPG套装系统 | 自动兼容99%护甲模组，动态品阶（稀有/传说/史诗/神话）+ 随机词条 + 鉴定卷轴，让你的整合包瞬间拥有顶级RPG体验！\n\nA high-freedom epic RPG armor set system | Auto-compatible with 99% armor mods, dynamic tiers, random affixes, and identification scrolls — bring top-tier RPG experience to your modpack!",
   "authors": [
     "NanYou"
   ],
