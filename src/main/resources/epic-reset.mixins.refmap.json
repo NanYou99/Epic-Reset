@@ -1,0 +1,17 @@
+{
+  "mappings": {
+    "com/nanyou/epicreset/mixin/LivingEntityMixin": {
+      "actuallyHurt(Lnet/minecraft/world/damagesource/DamageSource;F)V": "method_6074(Lnet/minecraft/class_1282;F)V",
+      "getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F": "method_6132(Lnet/minecraft/class_1282;F)F"
+    },
+    "com/nanyou/epicreset/mixin/ArmorItemMixin": {
+    },
+    "com/nanyou/epicreset/mixin/AbstractFurnaceBlockEntityMixin": {
+      "canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;I)Z": "method_11192(Lnet/minecraft/class_5455;Lnet/minecraft/class_8786;Lnet/minecraft/class_2371;I)Z",
+      "burn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;I)Z": "method_11203(Lnet/minecraft/class_5455;Lnet/minecraft/class_8786;Lnet/minecraft/class_2371;I)Z"
+    },
+    "com/nanyou/epicreset/mixin/ResultSlotMixin": {
+      "remove(I)Lnet/minecraft/world/item/ItemStack;": "method_7671(I)Lnet/minecraft/class_1799;"
+    }
+  }
+}

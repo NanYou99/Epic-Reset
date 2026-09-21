@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.nanyou.epicreset.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractFurnaceBlockEntityMixin",
+    "ArmorItemMixin",
+    "CraftingMenuMixin",
+    "LivingEntityMixin",
+    "ResultSlotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

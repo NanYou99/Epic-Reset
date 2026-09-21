@@ -1,0 +1,150 @@
+{
+  "mappings": {
+    "net/fabricmc/fabric/mixin/entity/event/EntityMixin": {
+      "Lnet/minecraft/entity/Entity;setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V": "Lnet/minecraft/class_1297;method_31745(Lnet/minecraft/class_1297$class_5529;)V",
+      "teleport(Lnet/minecraft/server/world/ServerWorld;DDDLjava/util/Set;FF)Z": "Lnet/minecraft/class_1297;method_48105(Lnet/minecraft/class_3218;DDDLjava/util/Set;FF)Z",
+      "teleportTo": "Lnet/minecraft/class_1297;method_5731(Lnet/minecraft/class_5454;)Lnet/minecraft/class_1297;"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/LivingEntityMixin": {
+      "Lnet/minecraft/block/BedBlock;findWakeUpPosition(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/CollisionView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;F)Ljava/util/Optional;": "Lnet/minecraft/class_2244;method_9484(Lnet/minecraft/class_1299;Lnet/minecraft/class_1941;Lnet/minecraft/class_2338;Lnet/minecraft/class_2350;F)Ljava/util/Optional;",
+      "Lnet/minecraft/block/BedBlock;getDirection(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/Direction;": "Lnet/minecraft/class_2244;method_18476(Lnet/minecraft/class_1922;Lnet/minecraft/class_2338;)Lnet/minecraft/class_2350;",
+      "Lnet/minecraft/entity/Entity;onKilledOther(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;)Z": "Lnet/minecraft/class_1297;method_5874(Lnet/minecraft/class_3218;Lnet/minecraft/class_1309;)Z",
+      "Lnet/minecraft/entity/LivingEntity;isDead()Z": "Lnet/minecraft/class_1309;method_29504()Z",
+      "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_1937;method_8320(Lnet/minecraft/class_2338;)Lnet/minecraft/class_2680;",
+      "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z": "Lnet/minecraft/class_1937;method_8652(Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z",
+      "damage": "Lnet/minecraft/class_1309;method_5643(Lnet/minecraft/class_1282;F)Z",
+      "getSleepingDirection": "Lnet/minecraft/class_1309;method_18401()Lnet/minecraft/class_2350;",
+      "method_18404": "Lnet/minecraft/class_1309;method_18404(Lnet/minecraft/class_2338;)V",
+      "method_18405": "Lnet/minecraft/class_1309;method_18405(Lnet/minecraft/class_2338;)Ljava/lang/Boolean;",
+      "net/minecraft/entity/LivingEntity.isSleeping()Z": "Lnet/minecraft/class_1309;method_6113()Z",
+      "net/minecraft/world/World.sendEntityStatus(Lnet/minecraft/entity/Entity;B)V": "Lnet/minecraft/class_1937;method_8421(Lnet/minecraft/class_1297;B)V",
+      "onDeath": "Lnet/minecraft/class_1309;method_6078(Lnet/minecraft/class_1282;)V",
+      "sleep": "Lnet/minecraft/class_1309;method_18403(Lnet/minecraft/class_2338;)V",
+      "wakeUp": "Lnet/minecraft/class_1309;method_18400()V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/MobEntityMixin": {
+      "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_1937;method_8649(Lnet/minecraft/class_1297;)Z",
+      "convertTo": "Lnet/minecraft/class_1308;method_29243(Lnet/minecraft/class_1299;Z)Lnet/minecraft/class_1308;"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/MooshroomEntityMixin": {
+      "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_1937;method_8649(Lnet/minecraft/class_1297;)Z",
+      "sheared": "Lnet/minecraft/class_1438;method_6636(Lnet/minecraft/class_3419;)V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/PigEntityMixin": {
+      "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_3218;method_8649(Lnet/minecraft/class_1297;)Z",
+      "onStruckByLightning": "Lnet/minecraft/class_1452;method_5800(Lnet/minecraft/class_3218;Lnet/minecraft/class_1538;)V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/PlayerEntityMixin": {
+      "Lnet/minecraft/world/World;isDay()Z": "Lnet/minecraft/class_1937;method_8530()Z",
+      "canResetTimeBySleeping": "Lnet/minecraft/class_1657;method_7276()Z",
+      "tick": "Lnet/minecraft/class_1657;method_5773()V",
+      "trySleep": "Lnet/minecraft/class_1657;method_7269(Lnet/minecraft/class_2338;)Lcom/mojang/datafixers/util/Either;"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/PlayerManagerMixin": {
+      "onPlayerConnect": "Lnet/minecraft/class_3324;method_14570(Lnet/minecraft/class_2535;Lnet/minecraft/class_3222;Lnet/minecraft/class_8792;)V",
+      "remove": "Lnet/minecraft/class_3324;method_14611(Lnet/minecraft/class_3222;)V",
+      "respawnPlayer": "Lnet/minecraft/class_3324;method_14556(Lnet/minecraft/class_3222;ZLnet/minecraft/class_1297$class_5529;)Lnet/minecraft/class_3222;"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/ServerPlayerEntityMixin": {
+      "Lnet/minecraft/block/BlockState;get(Lnet/minecraft/state/property/Property;)Ljava/lang/Comparable;": "Lnet/minecraft/class_2680;method_11654(Lnet/minecraft/class_2769;)Ljava/lang/Comparable;",
+      "Lnet/minecraft/server/network/ServerPlayerEntity;getPrimeAdversary()Lnet/minecraft/entity/LivingEntity;": "Lnet/minecraft/class_3222;method_6124()Lnet/minecraft/class_1309;",
+      "Lnet/minecraft/server/network/ServerPlayerEntity;setSpawnPoint(Lnet/minecraft/registry/RegistryKey;Lnet/minecraft/util/math/BlockPos;FZZ)V": "Lnet/minecraft/class_3222;method_26284(Lnet/minecraft/class_5321;Lnet/minecraft/class_2338;FZZ)V",
+      "Lnet/minecraft/world/World;isDay()Z": "Lnet/minecraft/class_1937;method_8530()Z",
+      "copyFrom": "Lnet/minecraft/class_3222;method_14203(Lnet/minecraft/class_3222;Z)V",
+      "onDeath": "Lnet/minecraft/class_3222;method_6078(Lnet/minecraft/class_1282;)V",
+      "trySleep": "Lnet/minecraft/class_3222;method_7269(Lnet/minecraft/class_2338;)Lcom/mojang/datafixers/util/Either;",
+      "worldChanged(Lnet/minecraft/server/world/ServerWorld;)V": "Lnet/minecraft/class_3222;method_18783(Lnet/minecraft/class_3218;)V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/TadpoleEntityMixin": {
+      "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/class_3218;method_30771(Lnet/minecraft/class_1297;)V",
+      "growUp": "Lnet/minecraft/class_7110;method_41397()V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/VillagerEntityMixin": {
+      "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/class_3218;method_30771(Lnet/minecraft/class_1297;)V",
+      "onStruckByLightning": "Lnet/minecraft/class_1646;method_5800(Lnet/minecraft/class_3218;Lnet/minecraft/class_1538;)V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/elytra/LivingEntityMixin": {
+      "Lnet/minecraft/entity/LivingEntity;getEquippedStack(Lnet/minecraft/entity/EquipmentSlot;)Lnet/minecraft/item/ItemStack;": "Lnet/minecraft/class_1309;method_6118(Lnet/minecraft/class_1304;)Lnet/minecraft/class_1799;",
+      "tickFallFlying()V": "Lnet/minecraft/class_1309;method_6053()V"
+    },
+    "net/fabricmc/fabric/mixin/entity/event/elytra/PlayerEntityMixin": {
+      "Lnet/minecraft/entity/EquipmentSlot;CHEST:Lnet/minecraft/entity/EquipmentSlot;": "Lnet/minecraft/class_1304;field_6174:Lnet/minecraft/class_1304;",
+      "checkFallFlying()Z": "Lnet/minecraft/class_1657;method_23668()Z"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "net/fabricmc/fabric/mixin/entity/event/EntityMixin": {
+        "Lnet/minecraft/entity/Entity;setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V": "Lnet/minecraft/class_1297;method_31745(Lnet/minecraft/class_1297$class_5529;)V",
+        "teleport(Lnet/minecraft/server/world/ServerWorld;DDDLjava/util/Set;FF)Z": "Lnet/minecraft/class_1297;method_48105(Lnet/minecraft/class_3218;DDDLjava/util/Set;FF)Z",
+        "teleportTo": "Lnet/minecraft/class_1297;method_5731(Lnet/minecraft/class_5454;)Lnet/minecraft/class_1297;"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/LivingEntityMixin": {
+        "Lnet/minecraft/block/BedBlock;findWakeUpPosition(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/CollisionView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;F)Ljava/util/Optional;": "Lnet/minecraft/class_2244;method_9484(Lnet/minecraft/class_1299;Lnet/minecraft/class_1941;Lnet/minecraft/class_2338;Lnet/minecraft/class_2350;F)Ljava/util/Optional;",
+        "Lnet/minecraft/block/BedBlock;getDirection(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/math/Direction;": "Lnet/minecraft/class_2244;method_18476(Lnet/minecraft/class_1922;Lnet/minecraft/class_2338;)Lnet/minecraft/class_2350;",
+        "Lnet/minecraft/entity/Entity;onKilledOther(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;)Z": "Lnet/minecraft/class_1297;method_5874(Lnet/minecraft/class_3218;Lnet/minecraft/class_1309;)Z",
+        "Lnet/minecraft/entity/LivingEntity;isDead()Z": "Lnet/minecraft/class_1309;method_29504()Z",
+        "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;": "Lnet/minecraft/class_1937;method_8320(Lnet/minecraft/class_2338;)Lnet/minecraft/class_2680;",
+        "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z": "Lnet/minecraft/class_1937;method_8652(Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z",
+        "damage": "Lnet/minecraft/class_1309;method_5643(Lnet/minecraft/class_1282;F)Z",
+        "getSleepingDirection": "Lnet/minecraft/class_1309;method_18401()Lnet/minecraft/class_2350;",
+        "method_18404": "Lnet/minecraft/class_1309;method_18404(Lnet/minecraft/class_2338;)V",
+        "method_18405": "Lnet/minecraft/class_1309;method_18405(Lnet/minecraft/class_2338;)Ljava/lang/Boolean;",
+        "net/minecraft/entity/LivingEntity.isSleeping()Z": "Lnet/minecraft/class_1309;method_6113()Z",
+        "net/minecraft/world/World.sendEntityStatus(Lnet/minecraft/entity/Entity;B)V": "Lnet/minecraft/class_1937;method_8421(Lnet/minecraft/class_1297;B)V",
+        "onDeath": "Lnet/minecraft/class_1309;method_6078(Lnet/minecraft/class_1282;)V",
+        "sleep": "Lnet/minecraft/class_1309;method_18403(Lnet/minecraft/class_2338;)V",
+        "wakeUp": "Lnet/minecraft/class_1309;method_18400()V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/MobEntityMixin": {
+        "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_1937;method_8649(Lnet/minecraft/class_1297;)Z",
+        "convertTo": "Lnet/minecraft/class_1308;method_29243(Lnet/minecraft/class_1299;Z)Lnet/minecraft/class_1308;"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/MooshroomEntityMixin": {
+        "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_1937;method_8649(Lnet/minecraft/class_1297;)Z",
+        "sheared": "Lnet/minecraft/class_1438;method_6636(Lnet/minecraft/class_3419;)V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/PigEntityMixin": {
+        "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/class_3218;method_8649(Lnet/minecraft/class_1297;)Z",
+        "onStruckByLightning": "Lnet/minecraft/class_1452;method_5800(Lnet/minecraft/class_3218;Lnet/minecraft/class_1538;)V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/PlayerEntityMixin": {
+        "Lnet/minecraft/world/World;isDay()Z": "Lnet/minecraft/class_1937;method_8530()Z",
+        "canResetTimeBySleeping": "Lnet/minecraft/class_1657;method_7276()Z",
+        "tick": "Lnet/minecraft/class_1657;method_5773()V",
+        "trySleep": "Lnet/minecraft/class_1657;method_7269(Lnet/minecraft/class_2338;)Lcom/mojang/datafixers/util/Either;"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/PlayerManagerMixin": {
+        "onPlayerConnect": "Lnet/minecraft/class_3324;method_14570(Lnet/minecraft/class_2535;Lnet/minecraft/class_3222;Lnet/minecraft/class_8792;)V",
+        "remove": "Lnet/minecraft/class_3324;method_14611(Lnet/minecraft/class_3222;)V",
+        "respawnPlayer": "Lnet/minecraft/class_3324;method_14556(Lnet/minecraft/class_3222;ZLnet/minecraft/class_1297$class_5529;)Lnet/minecraft/class_3222;"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/ServerPlayerEntityMixin": {
+        "Lnet/minecraft/block/BlockState;get(Lnet/minecraft/state/property/Property;)Ljava/lang/Comparable;": "Lnet/minecraft/class_2680;method_11654(Lnet/minecraft/class_2769;)Ljava/lang/Comparable;",
+        "Lnet/minecraft/server/network/ServerPlayerEntity;getPrimeAdversary()Lnet/minecraft/entity/LivingEntity;": "Lnet/minecraft/class_3222;method_6124()Lnet/minecraft/class_1309;",
+        "Lnet/minecraft/server/network/ServerPlayerEntity;setSpawnPoint(Lnet/minecraft/registry/RegistryKey;Lnet/minecraft/util/math/BlockPos;FZZ)V": "Lnet/minecraft/class_3222;method_26284(Lnet/minecraft/class_5321;Lnet/minecraft/class_2338;FZZ)V",
+        "Lnet/minecraft/world/World;isDay()Z": "Lnet/minecraft/class_1937;method_8530()Z",
+        "copyFrom": "Lnet/minecraft/class_3222;method_14203(Lnet/minecraft/class_3222;Z)V",
+        "onDeath": "Lnet/minecraft/class_3222;method_6078(Lnet/minecraft/class_1282;)V",
+        "trySleep": "Lnet/minecraft/class_3222;method_7269(Lnet/minecraft/class_2338;)Lcom/mojang/datafixers/util/Either;",
+        "worldChanged(Lnet/minecraft/server/world/ServerWorld;)V": "Lnet/minecraft/class_3222;method_18783(Lnet/minecraft/class_3218;)V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/TadpoleEntityMixin": {
+        "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/class_3218;method_30771(Lnet/minecraft/class_1297;)V",
+        "growUp": "Lnet/minecraft/class_7110;method_41397()V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/VillagerEntityMixin": {
+        "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/class_3218;method_30771(Lnet/minecraft/class_1297;)V",
+        "onStruckByLightning": "Lnet/minecraft/class_1646;method_5800(Lnet/minecraft/class_3218;Lnet/minecraft/class_1538;)V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/elytra/LivingEntityMixin": {
+        "Lnet/minecraft/entity/LivingEntity;getEquippedStack(Lnet/minecraft/entity/EquipmentSlot;)Lnet/minecraft/item/ItemStack;": "Lnet/minecraft/class_1309;method_6118(Lnet/minecraft/class_1304;)Lnet/minecraft/class_1799;",
+        "tickFallFlying()V": "Lnet/minecraft/class_1309;method_6053()V"
+      },
+      "net/fabricmc/fabric/mixin/entity/event/elytra/PlayerEntityMixin": {
+        "Lnet/minecraft/entity/EquipmentSlot;CHEST:Lnet/minecraft/entity/EquipmentSlot;": "Lnet/minecraft/class_1304;field_6174:Lnet/minecraft/class_1304;",
+        "checkFallFlying()Z": "Lnet/minecraft/class_1657;method_23668()Z"
+      }
+    }
+  }
+}

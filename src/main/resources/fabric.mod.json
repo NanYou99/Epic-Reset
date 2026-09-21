@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "epic-reset",
+  "version": "1.0.0",
+  "name": "Epic Reset - 史诗重置",
+  "description": "一套高自由度的史诗级RPG套装系统！自动兼容市面上绝大多数带有护甲的模组。为原版与第三方盔甲提供动态品阶判定（稀有/传说/史诗/神话）、随机生成的2件套与4件套词条，以及极具深度的随机词条装备系统。无需配置，即可让你的整合包拥有顶级RPG体验！",
+  "authors": [
+    "NanYou"
+  ],
+  "contact": {
+    "homepage": "https://github.com/NanYou99/Epic-Reset",
+    "sources": "https://github.com/NanYou99/Epic-Reset",
+    "issues": "https://github.com/NanYou99/Epic-Reset/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/epic-reset/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.nanyou.epicreset.EpicReset"
+    ],
+    "client": [
+      "com.nanyou.epicreset.client.EpicResetClient"
+    ]
+  },
+  "mixins": [
+    "epic-reset.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

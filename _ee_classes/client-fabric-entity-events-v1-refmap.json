@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "net/fabricmc/fabric/mixin/client/entity/event/elytra/ClientPlayerEntityMixin": {
+      "Lnet/minecraft/client/network/ClientPlayerEntity;checkFallFlying()Z": "Lnet/minecraft/class_746;method_23668()Z",
+      "Lnet/minecraft/client/network/ClientPlayerEntity;isClimbing()Z": "Lnet/minecraft/class_746;method_6101()Z",
+      "Lnet/minecraft/entity/EquipmentSlot;CHEST:Lnet/minecraft/entity/EquipmentSlot;": "Lnet/minecraft/class_1304;field_6174:Lnet/minecraft/class_1304;",
+      "tickMovement": "Lnet/minecraft/class_746;method_6007()V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "net/fabricmc/fabric/mixin/client/entity/event/elytra/ClientPlayerEntityMixin": {
+        "Lnet/minecraft/client/network/ClientPlayerEntity;checkFallFlying()Z": "Lnet/minecraft/class_746;method_23668()Z",
+        "Lnet/minecraft/client/network/ClientPlayerEntity;isClimbing()Z": "Lnet/minecraft/class_746;method_6101()Z",
+        "Lnet/minecraft/entity/EquipmentSlot;CHEST:Lnet/minecraft/entity/EquipmentSlot;": "Lnet/minecraft/class_1304;field_6174:Lnet/minecraft/class_1304;",
+        "tickMovement": "Lnet/minecraft/class_746;method_6007()V"
+      }
+    }
+  }
+}
