@@ -1,7 +1,6 @@
 package com.nanyou.epicreset.affix;
 
 import com.nanyou.epicreset.armorset.stat.StatCategory;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.component.CustomData;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,8 +68,7 @@ public final class AffixManager {
         }
         if (item instanceof BowItem
                 || item instanceof CrossbowItem
-                || item instanceof TridentItem
-                || item instanceof MaceItem) {
+                || item instanceof TridentItem) {
             return true;
         }
         return false;
@@ -86,7 +83,6 @@ public final class AffixManager {
             if (item instanceof SwordItem || item instanceof AxeItem
                     || item instanceof PickaxeItem || item instanceof ShovelItem
                     || item instanceof HoeItem) return WeaponStyle.MELEE;
-            if (item instanceof MaceItem) return WeaponStyle.MELEE;
             if (item instanceof TridentItem) return WeaponStyle.BOTH;
         } catch (Throwable ignored) {}
 
@@ -227,9 +223,8 @@ public final class AffixManager {
     }
 
     private static CompoundTag getEpicResetTag(ItemStack stack) {
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag customRoot = customData.copyTag();
-        if (!customRoot.contains(ROOT_KEY, Tag.TAG_COMPOUND)) return null;
+        CompoundTag customRoot = stack.getTag();
+        if (customRoot == null || !customRoot.contains(ROOT_KEY, Tag.TAG_COMPOUND)) return null;
         return customRoot.getCompound(ROOT_KEY).copy();
     }
 
@@ -242,12 +237,11 @@ public final class AffixManager {
     }
 
     private static TagKey<Item> itemTag(String path) {
-        return TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace(path));
+        return TagKey.create(Registries.ITEM, new ResourceLocation("minecraft", path));
     }
 
     private static void updateRoot(ItemStack stack, CompoundTag epicReset) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack,
-                customRoot -> customRoot.put(ROOT_KEY, epicReset.copy()));
+        stack.getOrCreateTag().put(ROOT_KEY, epicReset.copy());
     }
 
     private static Map<String, AffixDefinition> createArmorPool() {

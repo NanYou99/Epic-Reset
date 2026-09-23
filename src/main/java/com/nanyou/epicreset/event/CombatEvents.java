@@ -14,7 +14,6 @@ import com.nanyou.epicreset.weapon.resonance.ResonanceManager;
 import com.nanyou.epicreset.weapon.resonance.ResonanceRegistry;
 import com.nanyou.epicreset.weapon.resonance.WeaponType;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -29,29 +28,30 @@ import net.minecraft.world.item.*;
 import com.nanyou.epicreset.weapon.resonance.MaterialKey;
 
 import java.util.Map;
-
-import net.minecraft.resources.ResourceLocation;
+import java.util.UUID;
 
 public final class CombatEvents {
 
-    private static final ResourceLocation PIERCE_ID = EpicReset.id("armor_pierce");
+    private static final UUID PIERCE_UUID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
 
     private static final double MAX_CRIT_RATE = 0.6;
     private static final double BASE_CRIT_MULT = 1.5;
 
     public static void register() {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register(CombatEvents::onAllowDamage);
-        ServerLivingEntityEvents.AFTER_DAMAGE.register(CombatEvents::afterDamage);
+        // 1.20.1 Fabric API 没有 AFTER_DAMAGE 事件，需要 Mixin 调用 triggerAfterDamage
     }
 
     private static boolean onAllowDamage(LivingEntity target, DamageSource source, float baseAmount) {
-        if (source.getEntity() instanceof ServerPlayer attacker && !(target instanceof ServerPlayer)) {
-            try {
-                float finalDamage = applyAttackModifiers(attacker, target, source, baseAmount);
-                if (finalDamage <= 0f) return false;
-                setAmount(target, source, finalDamage);
-            } catch (Exception e) {
-                EpicReset.LOGGER.error("战斗计算错误", e);
+        if (source.getEntity() instanceof ServerPlayer attacker) {
+            if (!(target instanceof ServerPlayer)) {
+                try {
+                    float finalDamage = applyAttackModifiers(attacker, target, source, baseAmount);
+                    if (finalDamage <= 0f) return false;
+                    setAmount(target, source, finalDamage);
+                } catch (Exception e) {
+                    EpicReset.LOGGER.error("战斗计算错误", e);
+                }
             }
         }
         if (target instanceof ServerPlayer player) {
@@ -80,7 +80,6 @@ public final class CombatEvents {
         Item item = mainHand.isEmpty() ? null : mainHand.getItem();
 
         StatAccumulator acc = new StatAccumulator();
-
         acc.merge(ServerCombatHandler.collectAllStatsPublic(attacker));
         acc.merge(AffixManager.collectArmorMods(attacker));
 
@@ -107,10 +106,9 @@ public final class CombatEvents {
         }
 
         applySetDynamicMods(attacker, acc);
-
         Map<StatCategory, Double> factors = acc.mulReduce();
 
-        boolean isDirect = source.isDirect();
+        boolean isDirect = source.getDirectEntity() != null;
         boolean isVanillaMelee = (wt == WeaponType.SWORD || wt == WeaponType.AXE || wt == WeaponType.MACE
                 || (wt == WeaponType.TRIDENT && isDirect));
         boolean isVanillaRanged = (wt == WeaponType.BOW || wt == WeaponType.CROSSBOW
@@ -118,10 +116,8 @@ public final class CombatEvents {
         boolean isOther = !isVanillaMelee && !isVanillaRanged;
         boolean melee = isVanillaMelee || (isOther && isDirect);
         boolean ranged = isVanillaRanged || (isOther && !isDirect);
-
         boolean vanillaCrit = isVanillaCrit(attacker);
 
-        // 暴击
         if (!vanillaCrit && factors.containsKey(StatCategory.CRIT_RATE)) {
             double critRate = Math.max(0, Math.min(MAX_CRIT_RATE, factors.get(StatCategory.CRIT_RATE)));
             if (attacker.getRandom().nextFloat() < critRate) {
@@ -137,13 +133,10 @@ public final class CombatEvents {
             }
         }
 
-        // 穿甲
         if (factors.containsKey(StatCategory.ARMOR_PIERCE)) {
-            double pierce = Math.min(0.6, factors.get(StatCategory.ARMOR_PIERCE));
-            applyPierce(target, pierce);
+            applyPierce(target, Math.min(0.6, factors.get(StatCategory.ARMOR_PIERCE)));
         }
 
-        // 近战/远程加成
         if (melee && factors.containsKey(StatCategory.MELEE_DMG)) {
             double mul = factors.get(StatCategory.MELEE_DMG);
             if (mul != 1d) dmg *= (float) Math.max(0.1, mul);
@@ -153,54 +146,37 @@ public final class CombatEvents {
             if (mul != 1d) dmg *= (float) Math.max(0.1, mul);
         }
 
-        if (re != null && re.onHit() != null) { re.onHit().accept(attacker, target); }
+        if (re != null && re.onHit() != null) re.onHit().accept(attacker, target);
 
-        // 吸血
         if (factors.containsKey(StatCategory.LIFE_STEAL)) {
             double ls = Math.max(0, Math.min(0.5, factors.get(StatCategory.LIFE_STEAL)));
-            double healBonus = factors.getOrDefault(StatCategory.HEAL_POWER, 1d);
-            if (healBonus < 1d) healBonus = 1d;
+            double healBonus = Math.max(1d, factors.getOrDefault(StatCategory.HEAL_POWER, 1d));
             if (ls > 0.0001) {
-                float healed = Math.min(
-                        attacker.getMaxHealth() - attacker.getHealth(),
+                float healed = Math.min(attacker.getMaxHealth() - attacker.getHealth(),
                         dmg * (float) ls * (float) healBonus);
                 if (healed > 0.01f) attacker.heal(healed);
             }
         }
 
-        // ⭐ 焚焰：只增加额外伤害，不再点燃目标
-        // （无论 BURN_DMG 从共鸣、互动还是随机词条来，都不会有火焰视觉）
         if (factors.containsKey(StatCategory.BURN_DMG)) {
             double burnFactor = factors.get(StatCategory.BURN_DMG);
-            if (burnFactor > 1.001) {
-                double burnPct = (burnFactor - 1.0) * 100;
-                dmg += (float) burnPct;
-            }
+            if (burnFactor > 1.001) dmg += (float) ((burnFactor - 1.0) * 100);
         }
 
-        // 撕裂
         if (factors.containsKey(StatCategory.DOT_BLEED)) {
             double bleedFactor = factors.get(StatCategory.DOT_BLEED);
             if (bleedFactor > 1.001) {
-                double bleedPct = (bleedFactor - 1.0) * 100;
-                int amplifier = Math.max(0, (int) (bleedPct / 2));
+                int amplifier = Math.max(0, (int) (((bleedFactor - 1.0) * 100) / 2));
                 MobEffectInstance existing = target.getEffect(MobEffects.WITHER);
                 if (existing == null || existing.getDuration() < 60) {
-                    target.addEffect(new MobEffectInstance(
-                            MobEffects.WITHER,
-                            60,
-                            amplifier,
-                            false, false, true));
+                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, amplifier, false, false, true));
                 }
             }
         }
 
-        // 击退
         if (factors.containsKey(StatCategory.KNOCKBACK_POWER)) {
             double kb = Math.min(0.5, factors.get(StatCategory.KNOCKBACK_POWER));
-            if (kb > 0) {
-                target.knockback((float) kb, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
-            }
+            if (kb > 0) target.knockback((float) kb, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
         }
 
         return Math.max(0f, dmg);
@@ -213,9 +189,8 @@ public final class CombatEvents {
 
         if (mat == MaterialKey.IRON && hpPct < 0.3f) {
             acc.add(StatCategory.MELEE_DMG, 0.08);
-            if (!m.isEmpty() && (m.getItem() == Items.IRON_SWORD)) acc.add(StatCategory.MELEE_DMG, 0.05);
-            if (!m.isEmpty() && (m.getItem() == Items.IRON_AXE)) acc.add(StatCategory.ARMOR_PIERCE, 0.04);
-            if (!m.isEmpty() && m.getItem() instanceof MaceItem) acc.add(StatCategory.MELEE_DMG, 0.08);
+            if (!m.isEmpty() && m.getItem() == Items.IRON_SWORD) acc.add(StatCategory.MELEE_DMG, 0.05);
+            if (!m.isEmpty() && m.getItem() == Items.IRON_AXE) acc.add(StatCategory.ARMOR_PIERCE, 0.04);
         }
         if (mat == MaterialKey.NETHERITE && hpPct > 0.7f) {
             boolean netheriteSword = !m.isEmpty() && m.getItem() == Items.NETHERITE_SWORD;
@@ -236,52 +211,52 @@ public final class CombatEvents {
             reduce = 1d - (1d - reduce) * 0.85d;
             PerPlayerTimerStore.writeLast(player, "epicreset:lastDiamondBigHitTick");
         }
-        if (mat == MaterialKey.DIAMOND && player.getMainHandItem().getItem() instanceof MaceItem
-                && isMaceSmash(source)) {
-            reduce = 1d - (1d - reduce) * 0.95d;
-        }
         if (mat == MaterialKey.LEATHER && player.getRandom().nextFloat() < 0.08
                 && !PerPlayerTimerStore.cooldownPassed(player, "epicreset:lastLeatherBootsMoveTick", 60)) {
             ensureEffect(player, MobEffects.MOVEMENT_SPEED, 80, 1);
             PerPlayerTimerStore.writeLast(player, "epicreset:lastLeatherBootsMoveTick");
-        } else if (mat == MaterialKey.LEATHER && player.getRandom().nextFloat() < 0.15
-                && amount > 0.5f
+        } else if (mat == MaterialKey.LEATHER && player.getRandom().nextFloat() < 0.15 && amount > 0.5f
                 && !PerPlayerTimerStore.cooldownPassed(player, "epicreset:lastLeatherFourMoveTick", 80)) {
             ensureEffect(player, MobEffects.MOVEMENT_SPEED, 100, 1);
             PerPlayerTimerStore.writeLast(player, "epicreset:lastLeatherFourMoveTick");
         }
         if (reduce > 0) {
-            float newAmt = amount * (float) (1d - Math.min(0.95, reduce));
-            setAmount(player, source, newAmt);
+            setAmount(player, source, amount * (float) (1d - Math.min(0.95, reduce)));
         }
     }
 
-    private static void afterDamage(LivingEntity entity, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
-        if (entity instanceof ServerPlayer p && !entity.isAlive() && source.getEntity() instanceof ServerPlayer killer) {
-            MaterialKey mat = ArmorSetApplier.getInstance().getFullArmorMaterial(killer);
-            if (mat == MaterialKey.GOLDEN
-                    && !PerPlayerTimerStore.cooldownPassed(killer, "epicreset:lastGoldKillLifeStealTick", 20)) {
-                ensureEffect(killer, MobEffects.REGENERATION, 100, 0);
-                float healed = Math.min(killer.getMaxHealth() - killer.getHealth(), baseDamageTaken * 0.05f);
-                if (healed > 0.01f) killer.heal(healed);
-                PerPlayerTimerStore.writeLast(killer, "epicreset:lastGoldKillLifeStealTick");
+    // 需要 Mixin 调用此方法（注入 LivingEntity#actuallyHurt 尾部）
+    public static void triggerAfterDamage(LivingEntity entity, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
+        if (entity instanceof ServerPlayer p && !entity.isAlive()) {
+            if (source.getEntity() instanceof ServerPlayer killer) {
+                MaterialKey mat = ArmorSetApplier.getInstance().getFullArmorMaterial(killer);
+                if (mat == MaterialKey.GOLDEN
+                        && !PerPlayerTimerStore.cooldownPassed(killer, "epicreset:lastGoldKillLifeStealTick", 20)) {
+                    ensureEffect(killer, MobEffects.REGENERATION, 100, 0);
+                    float healed = Math.min(killer.getMaxHealth() - killer.getHealth(), baseDamageTaken * 0.05f);
+                    if (healed > 0.01f) killer.heal(healed);
+                    PerPlayerTimerStore.writeLast(killer, "epicreset:lastGoldKillLifeStealTick");
+                }
             }
         }
-        if (source.getEntity() instanceof ServerPlayer attacker && entity instanceof LivingEntity target && !(target instanceof ServerPlayer)) {
-            ResonanceEntry re = ResonanceManager.getInstance().getActive(attacker);
-            if (re != null && re.onHit() != null) {
-                try { re.onHit().accept(attacker, target); } catch (Exception ignore) {}
-            }
-            WeaponType type = WeaponInteractManager.weaponTypeOfStack(attacker.getMainHandItem());
-            WeaponInteractEntry interact = WeaponInteractManager.getInstance().getActiveInteract(attacker, type);
-            if (interact != null) {
-                try {
-                    interact.onHit().accept(attacker, target);
-                    if (type == WeaponType.MACE && isMaceSmash(source)) {
-                        interact.onChargedHit().accept(attacker, target);
+        if (source.getEntity() instanceof ServerPlayer attacker) {
+            if (!(entity instanceof ServerPlayer)) {
+                LivingEntity target = entity;
+                ResonanceEntry re = ResonanceManager.getInstance().getActive(attacker);
+                if (re != null && re.onHit() != null) {
+                    try { re.onHit().accept(attacker, target); } catch (Exception ignore) {}
+                }
+                WeaponType type = WeaponInteractManager.weaponTypeOfStack(attacker.getMainHandItem());
+                WeaponInteractEntry interact = WeaponInteractManager.getInstance().getActiveInteract(attacker, type);
+                if (interact != null) {
+                    try {
+                        interact.onHit().accept(attacker, target);
+                        if (type == WeaponType.MACE && isMaceSmash(source)) {
+                            interact.onChargedHit().accept(attacker, target);
+                        }
+                    } catch (Exception e) {
+                        EpicReset.LOGGER.error("武器套装互动执行错误", e);
                     }
-                } catch (Exception e) {
-                    EpicReset.LOGGER.error("武器套装互动执行错误", e);
                 }
             }
         }
@@ -303,19 +278,17 @@ public final class CombatEvents {
     private static void applyPierce(LivingEntity target, double ratio) {
         var inst = target.getAttribute(Attributes.ARMOR);
         if (inst == null) return;
-        inst.removeModifier(PIERCE_ID);
+        inst.removeModifier(PIERCE_UUID);
         double base = inst.getBaseValue();
         double reduce = -base * Math.min(1d, Math.max(0, ratio));
         if (reduce == 0d) return;
-        AttributeModifier mod = new AttributeModifier(PIERCE_ID, reduce, AttributeModifier.Operation.ADD_VALUE);
+        AttributeModifier mod = new AttributeModifier(PIERCE_UUID, "epicreset_armor_pierce", reduce, AttributeModifier.Operation.ADDITION);
         inst.addTransientModifier(mod);
         MinecraftServer srv = target.getServer();
-        if (srv != null) {
-            srv.execute(() -> inst.removeModifier(PIERCE_ID));
-        }
+        if (srv != null) srv.execute(() -> inst.removeModifier(PIERCE_UUID));
     }
 
-    private static void ensureEffect(ServerPlayer p, Holder<MobEffect> eff, int dur, int amp) {
+    private static void ensureEffect(ServerPlayer p, MobEffect eff, int dur, int amp) {
         MobEffectInstance cur = p.getEffect(eff);
         if (cur == null || cur.getDuration() < 10 || cur.getAmplifier() < amp) {
             p.addEffect(new MobEffectInstance(eff, dur, amp, false, false, true));

@@ -1,7 +1,6 @@
 package com.nanyou.epicreset.armorset;
 
 import com.nanyou.epicreset.armorset.stat.StatCategory;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,7 +10,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +20,6 @@ public final class ThirdPartyArmorSetResolver {
     public static final String IDENTIFY_NBT_KEY = "epicreset_set_identified";
     private static final Map<String, TierInfo> TIER_CACHE = new ConcurrentHashMap<>();
 
-    // ⭐ 8 个核心词条（新增 ARMOR）
     private static final List<StatCategory> CORE_POOL = List.of(
             StatCategory.MELEE_DMG,
             StatCategory.RANGED_DMG,
@@ -34,7 +31,6 @@ public final class ThirdPartyArmorSetResolver {
             StatCategory.ARMOR
     );
 
-    // ⭐ 12 种风格权重表（8 元素，最后一位是 ARMOR 护甲值权重）
     private static final double[] STYLE_WARRIOR   = {3.0, 0.3, 1.8, 1.5, 2.5, 1.2, 1.0, 1.8};
     private static final double[] STYLE_KNIGHT    = {2.5, 0.3, 1.2, 3.0, 1.8, 1.0, 1.5, 2.8};
     private static final double[] STYLE_MAGE      = {0.3, 3.0, 1.5, 1.0, 2.5, 1.5, 1.0, 0.5};
@@ -69,15 +65,14 @@ public final class ThirdPartyArmorSetResolver {
 
     public static boolean isPieceIdentified(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        var data = stack.get(DataComponents.CUSTOM_DATA);
-        if (data == null) return false;
-        try { return data.copyTag().getBoolean(IDENTIFY_NBT_KEY); } catch (Exception e) { return false; }
+        var tag = stack.getTag();
+        if (tag == null) return false;
+        return tag.getBoolean(IDENTIFY_NBT_KEY);
     }
 
     public static void markPieceIdentified(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return;
-        CustomData.update(DataComponents.CUSTOM_DATA, stack,
-                nbt -> nbt.putBoolean(IDENTIFY_NBT_KEY, true));
+        stack.getOrCreateTag().putBoolean(IDENTIFY_NBT_KEY, true);
     }
 
     public static Optional<SetInfo> getSetInfo(ItemStack stack, Player player) {
@@ -127,11 +122,8 @@ public final class ThirdPartyArmorSetResolver {
     private static boolean hasNetheriteTraits(ItemStack stack) {
         if (!(stack.getItem() instanceof ArmorItem armorItem)) return false;
         try {
-            var holder = armorItem.getMaterial();
-            if (holder != null) {
-                var material = holder.value();
-                if (material != null && material.toughness() >= 3.0f && material.knockbackResistance() > 0.0f) return true;
-            }
+            var material = armorItem.getMaterial();
+            if (material != null && material.getToughness() >= 3.0f && material.getKnockbackResistance() > 0.0f) return true;
         } catch (Throwable ignored) {}
         return false;
     }
@@ -189,7 +181,7 @@ public final class ThirdPartyArmorSetResolver {
     private static TierInfo createTierInfo(ThirdPartyArmorTier tier, String groupKey, boolean isVanilla, int totalPieces, Map<EquipmentSlot, Item> slotPieces) {
         int twoPieceCount, fourPieceCount;
         double healthCap;
-        double armorCap;       // ⭐ 护甲值上限
+        double armorCap;
         double spikeMultiplier;
 
         switch (tier) {
@@ -257,14 +249,11 @@ public final class ThirdPartyArmorSetResolver {
             if (cat == StatCategory.MAX_HEALTH) {
                 value = Math.max(1, Math.round(healthCap * fillRatio));
             } else if (cat == StatCategory.ARMOR) {
-                // ⭐ 护甲值：固定值
                 value = Math.max(1, Math.round(armorCap * fillRatio));
             } else if (cat == StatCategory.ATTACK_SPEED) {
-                // ⭐ 攻速：原版 15% / 第三方 30%
                 double cap = (isVanilla ? 0.15 : 0.30) * getTierMultiplier(tier);
                 value = Math.round(cap * fillRatio * 10000d) / 10000d;
             } else {
-                // 其他百分比词条：原版 4.5% / 第三方 7.5%
                 double cap = (isVanilla ? 0.045 : 0.075) * getTierMultiplier(tier);
                 value = Math.round(cap * fillRatio * 10000d) / 10000d;
             }
@@ -350,32 +339,21 @@ public final class ThirdPartyArmorSetResolver {
 
     public static double getArmorValue(ItemStack stack) {
         double[] armor = {0d};
-        var modifiersComponent = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
-        if (modifiersComponent != null) {
-            for (var entry : modifiersComponent.modifiers()) {
-                try {
-                    var key = BuiltInRegistries.ATTRIBUTE.getKey(entry.attribute().value());
-                    if (key == null) continue;
-                    String keyStr = key.toString();
-                    if (keyStr.contains("armor") && !keyStr.contains("toughness")
-                            && entry.modifier().operation() == AttributeModifier.Operation.ADD_VALUE) {
-                        armor[0] += entry.modifier().amount();
-                    }
-                } catch (Throwable ignored) {}
-            }
-        }
-        if (armor[0] == 0 && stack.getItem() instanceof ArmorItem armorItem) {
-            var defaultModifiers = armorItem.getDefaultAttributeModifiers();
-            for (var entry : defaultModifiers.modifiers()) {
-                try {
-                    var key = BuiltInRegistries.ATTRIBUTE.getKey(entry.attribute().value());
-                    if (key == null) continue;
-                    String keyStr = key.toString();
-                    if (keyStr.contains("armor") && !keyStr.contains("toughness")
-                            && entry.modifier().operation() == AttributeModifier.Operation.ADD_VALUE) {
-                        armor[0] += entry.modifier().amount();
-                    }
-                } catch (Throwable ignored) {}
+        if (stack.getItem() instanceof ArmorItem armorItem) {
+            EquipmentSlot slot = armorSlotFor(stack);
+            if (slot != null) {
+                var defaultModifiers = armorItem.getDefaultAttributeModifiers(slot);
+                for (var entry : defaultModifiers.entries()) {
+                    try {
+                        var key = BuiltInRegistries.ATTRIBUTE.getKey(entry.getKey());
+                        if (key == null) continue;
+                        String keyStr = key.toString();
+                        if (keyStr.contains("armor") && !keyStr.contains("toughness")
+                                && entry.getValue().getOperation() == AttributeModifier.Operation.ADDITION) {
+                            armor[0] += entry.getValue().getAmount();
+                        }
+                    } catch (Throwable ignored) {}
+                }
             }
         }
         return armor[0];

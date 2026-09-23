@@ -66,7 +66,6 @@ public final class ResonanceManager {
         if (item instanceof BowItem) return BOW;
         if (item instanceof CrossbowItem) return CROSSBOW;
         if (item instanceof TridentItem) return TRIDENT;
-        if (item instanceof MaceItem) return MACE;
         if (item instanceof ShieldItem) return SHIELD;
         return OTHER;
     }

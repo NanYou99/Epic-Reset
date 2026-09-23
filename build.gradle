@@ -1,9 +1,17 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
+version = project.version
+group = project.group
+
+base {
+	archivesName = project.archives_base_name
+}
+
 repositories {
+	// 如果你有额外的仓库可以加在这里
 }
 
 loom {
@@ -22,25 +30,26 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// MixinExtras - 用于 @ModifyExpressionValue / @ModifyReturnValue 注解
+	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixinextras_version}")))
 }
 
 processResources {
-	def version = project.version
-	inputs.property "version", version
-
+	inputs.property "version", project.version
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand "version": project.version
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 17
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {

@@ -31,35 +31,28 @@ public final class IdentificationScrollItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack scroll = player.getItemInHand(hand);
-        if (level.isClientSide) {
-            return InteractionResultHolder.success(scroll);
-        }
+        if (level.isClientSide) return InteractionResultHolder.success(scroll);
 
-        InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND)
-                ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
         ItemStack target = player.getItemInHand(otherHand);
 
         if (target.isEmpty()) {
-            player.displayClientMessage(
-                    Component.literal("请将未鉴定的装备放在副手").withStyle(ChatFormatting.RED), true);
+            player.displayClientMessage(Component.literal("请将未鉴定的装备放在副手").withStyle(ChatFormatting.RED), true);
             return InteractionResultHolder.fail(scroll);
         }
 
         if (target.getItem() instanceof IdentificationScrollItem) {
-            player.displayClientMessage(
-                    Component.literal("无法鉴定鉴定卷轴").withStyle(ChatFormatting.RED), true);
+            player.displayClientMessage(Component.literal("无法鉴定鉴定卷轴").withStyle(ChatFormatting.RED), true);
             return InteractionResultHolder.fail(scroll);
         }
 
         boolean identifiedAny = false;
 
-        // 1. 鉴定随机词条
         if (AffixManager.hasAffixData(target) && !AffixManager.isIdentified(target)) {
             AffixManager.identify(target);
             identifiedAny = true;
         }
 
-        // 2. 如果是护甲，检查套装鉴定
         if (target.getItem() instanceof ArmorItem) {
             if (isPiecePendingSetIdentification(player, target)) {
                 ThirdPartyArmorSetResolver.markPieceIdentified(target);
@@ -68,49 +61,32 @@ public final class IdentificationScrollItem extends Item {
         }
 
         if (!identifiedAny) {
-            player.displayClientMessage(
-                    Component.literal("该装备已完全鉴定").withStyle(ChatFormatting.GRAY), true);
+            player.displayClientMessage(Component.literal("该装备已完全鉴定").withStyle(ChatFormatting.GRAY), true);
             return InteractionResultHolder.fail(scroll);
         }
 
-        if (!player.getAbilities().instabuild) {
-            scroll.shrink(1);
-        }
+        if (!player.getAbilities().instabuild) scroll.shrink(1);
 
         playIdentifyEffect(level, player);
-        player.displayClientMessage(
-                Component.literal("已鉴定：" + target.getHoverName().getString())
-                        .withStyle(ChatFormatting.GREEN), true);
+        player.displayClientMessage(Component.literal("已鉴定：" + target.getHoverName().getString()).withStyle(ChatFormatting.GREEN), true);
         return InteractionResultHolder.consume(scroll);
     }
 
-    /**
-     * ⭐ 修复：正确处理第三方套装（IArmorSetProvider 返回 null 时回退）
-     */
     private static boolean isPiecePendingSetIdentification(Player player, ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ArmorItem)) return false;
         if (ThirdPartyArmorSetResolver.isPieceIdentified(stack)) return false;
 
         String groupKey = null;
-
-        // 优先尝试原版接口
         if (stack.getItem() instanceof IArmorSetProvider provider) {
             groupKey = provider.epicreset$getArmorSetId();
         }
-
-        // ⭐ 如果为 null（第三方套装），回退到第三方解析
         if (groupKey == null) {
-            Optional<ThirdPartyArmorSetResolver.SetInfo> infoOpt =
-                    ThirdPartyArmorSetResolver.getSetInfo(stack, player);
-            if (infoOpt.isPresent()) {
-                groupKey = infoOpt.get().groupKey();
-            }
+            Optional<ThirdPartyArmorSetResolver.SetInfo> infoOpt = ThirdPartyArmorSetResolver.getSetInfo(stack, player);
+            if (infoOpt.isPresent()) groupKey = infoOpt.get().groupKey();
         }
-
         if (groupKey == null) return false;
 
-        ThirdPartyArmorSetResolver.TierInfo tierInfo =
-                ThirdPartyArmorSetResolver.getTierInfo(groupKey, ArmorSetManager.getInstance());
+        ThirdPartyArmorSetResolver.TierInfo tierInfo = ThirdPartyArmorSetResolver.getTierInfo(groupKey, ArmorSetManager.getInstance());
         if (tierInfo == null) return false;
 
         return ThirdPartyArmorSetResolver.requiresIdentification(tierInfo.tier());
@@ -118,20 +94,15 @@ public final class IdentificationScrollItem extends Item {
 
     private static void playIdentifyEffect(Level level, Player player) {
         if (level instanceof ServerLevel serverLevel) {
-            serverLevel.playSound(null,
-                    player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.ENCHANTMENT_TABLE_USE,
-                    SoundSource.PLAYERS, 0.8f, 1.1f);
+            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.8f, 1.1f);
             serverLevel.sendParticles(ParticleTypes.ENCHANT,
-                    player.getX(), player.getY() + 1.0, player.getZ(),
-                    30, 0.6, 0.8, 0.6, 0.1);
+                    player.getX(), player.getY() + 1.0, player.getZ(), 30, 0.6, 0.8, 0.6, 0.1);
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context,
-                                List<Component> lines, TooltipFlag flag) {
-        lines.add(Component.translatable("item.epic-reset.identification_scroll.tooltip")
-                .withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag flag) {
+        lines.add(Component.translatable("item.epic-reset.identification_scroll.tooltip").withStyle(ChatFormatting.GRAY));
     }
 }

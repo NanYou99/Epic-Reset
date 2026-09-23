@@ -28,7 +28,7 @@ public final class ClientTooltipHandler {
     private ClientTooltipHandler() {}
 
     public static void register() {
-        ItemTooltipCallback.EVENT.register((stack, context, tooltipType, lines) -> {
+        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
             Player player = net.minecraft.client.Minecraft.getInstance().player;
             appendAffixTooltip(stack, lines);
             if (stack.getItem() instanceof ArmorItem
@@ -194,12 +194,6 @@ public final class ClientTooltipHandler {
         lines.add(Component.literal("  ").append(mark).append(desc));
     }
 
-    /**
-     * ⭐ 生命值、护甲值：整数显示
-     * 攻击范围：格显示
-     * 击退力量：小数显示
-     * 其他：百分比显示
-     */
     private static MutableComponent formatStat(StatCategory cat, double value, TextColor color) {
         String statName = I18n.get("stat.epic-reset." + cat.name().toLowerCase(Locale.ROOT));
         String valStr;
